@@ -1,33 +1,31 @@
-import OpenAI from 'openai';
-import OpenAIMock from '../utils/OpenAIMock.js';
+import { GoogleGenAI } from '@google/genai';
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+let history = [
+  {
+    role: 'user',
+    parts: [{ text: 'Hello' }]
+  },
+  {
+    role: 'model',
+    parts: [{ text: 'Great to meet you. What would you like to know?' }]
+  }
+];
 
 export const createChat = async (req, res) => {
   const {
-    body: { stream, ...request },
-    headers: { mode }
+    body: { message }
   } = req;
 
-  let openai;
-
-  mode === 'production' ? (openai = new OpenAI({ apiKey: process.env.OPEN_AI_APIKEY })) : (openai = new OpenAIMock());
-
-  const completion = await openai.chat.completions.create({
-    stream,
-    ...request
+  const chat = ai.chats.create({
+    model: 'gemini-2.0-flash',
+    history
   });
+  const aiResponse = await chat.sendMessage({ message });
 
-  if (stream) {
-    res.writeHead(200, {
-      Connection: 'keep-alive',
-      'Cache-Control': 'no-cache',
-      'Content-Type': 'text/event-stream'
-    });
-    for await (const chunk of completion) {
-      res.write(`data: ${JSON.stringify(chunk)}\n\n`);
-    }
-    res.end();
-    res.on('close', () => res.end());
-  } else {
-    res.json(completion.choices[0]);
-  }
+  history = chat.getHistory();
+
+  console.log(JSON.stringify(history));
+
+  res.json({ message: aiResponse.text });
 };
