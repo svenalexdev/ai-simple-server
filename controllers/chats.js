@@ -1,8 +1,7 @@
 import OpenAI from 'openai';
 import OpenAIMock from '../utils/OpenAIMock.js';
-import asyncHandler from '../utils/asyncHandler.js';
 
-export const createChat = asyncHandler(async (req, res) => {
+export const createChat = async (req, res) => {
   const {
     body: { stream, ...request },
     headers: { mode }
@@ -10,9 +9,7 @@ export const createChat = asyncHandler(async (req, res) => {
 
   let openai;
 
-  mode === 'production'
-    ? (openai = new OpenAI({ apiKey: process.env.OPEN_AI_APIKEY }))
-    : (openai = new OpenAIMock());
+  mode === 'production' ? (openai = new OpenAI({ apiKey: process.env.OPEN_AI_APIKEY })) : (openai = new OpenAIMock());
 
   const completion = await openai.chat.completions.create({
     stream,
@@ -33,4 +30,4 @@ export const createChat = asyncHandler(async (req, res) => {
   } else {
     res.json(completion.choices[0]);
   }
-});
+};

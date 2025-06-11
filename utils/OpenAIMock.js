@@ -1,11 +1,3 @@
-import { readFile } from 'fs/promises';
-import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
-import { PassThrough } from 'stream';
-import ErrorResponse from './ErrorResponse.js';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
 class StreamMock {
   constructor(words) {
     this.words = words;
@@ -26,9 +18,7 @@ class StreamMock {
           created: Math.floor(Date.now() / 1000),
           model: 'gpt-3.5-mock',
           system_fingerprint: 'fp_c2295e73ad',
-          choices: [
-            { index: 0, delta: { content: `${v} ` }, logprobs: null, finish_reason: 'stop' }
-          ]
+          choices: [{ index: 0, delta: { content: `${v} ` }, logprobs: null, finish_reason: 'stop' }]
         };
       } else {
         yield {
@@ -47,8 +37,8 @@ class StreamMock {
 class ChatMock {
   completions = {
     create({ messages, model, stream }) {
-      if (!model) throw new ErrorResponse('400 you must provide a model parameter', 400);
-      if (!messages) throw new ErrorResponse("400 Missing required parameter: 'messages'", 400);
+      if (!model) throw new Error('400 you must provide a model parameter', { cause: 400 });
+      if (!messages) throw new Error("400 Missing required parameter: 'messages'", { cause: 400 });
 
       const text =
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
@@ -108,25 +98,11 @@ class ImageMock {
   }
 }
 
-class AudioMock {
-  speech = {
-    async create() {
-      const filePath = join(__dirname, '../rr.mp3');
-      const rr = await readFile(filePath);
-      const passThrough = new PassThrough();
-      passThrough.write(rr);
-      passThrough.end();
-      return { body: passThrough };
-    }
-  };
-}
-
 class OpenAIMock {
   constructor() {}
 
   chat = new ChatMock();
   images = new ImageMock();
-  audio = new AudioMock();
 }
 
 export default OpenAIMock;
