@@ -14,8 +14,7 @@
   "dependencies": {
     "@google/genai": "^1.4.0",
     "cors": "^2.8.5",
-    "express": "^5.1.0",
-    "openai": "^4.38.2"
+    "express": "^5.1.0"
   },
   "devDependencies": {
     "dotenv": "^16.5.0"
