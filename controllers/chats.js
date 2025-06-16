@@ -5,10 +5,10 @@ import Chat from '../models/Chat.js';
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const model = 'gemini-2.0-flash';
-const systemInstruction = 'You are Gollum after becoming a senior web developer';
+const systemInstruction = 'You are Gollum after becoming a senior web developer.';
 
 const createSimpleChat = async (req, res) => {
-  const { message } = req.sanitizedBody;
+  const { message, stream } = req.sanitizedBody;
 
   let history = [
     {
@@ -29,15 +29,31 @@ const createSimpleChat = async (req, res) => {
     }
   });
 
-  const aiResponse = await chat.sendMessage({ message });
+  if (stream) {
+    const aiResponse = await chat.sendMessageStream({ message });
+    res.writeHead(200, {
+      Connection: 'keep-alive',
+      'Cache-Control': 'no-cache',
+      'Content-Type': 'text/event-stream'
+    });
 
-  history = chat.getHistory();
+    for await (const chunk of aiResponse) {
+      console.log(chunk.text);
+      res.write(`data: ${chunk.text}\n\n`);
+    }
+    res.end();
+    res.on('close', () => res.end());
+  } else {
+    const aiResponse = await chat.sendMessage({ message });
 
-  res.json({ aiResponse: aiResponse.text });
+    history = chat.getHistory();
+
+    res.json({ aiResponse: aiResponse.text });
+  }
 };
 
 const createChat = async (req, res) => {
-  const { message, chatId } = req.sanitizedBody;
+  const { message, chatId, stream } = req.sanitizedBody;
 
   // find chat in database
   let currentChat = await Chat.findById(chatId);
@@ -55,13 +71,48 @@ const createChat = async (req, res) => {
       systemInstruction
     }
   });
-  const aiResponse = await chat.sendMessage({ message });
 
-  currentChat.history = chat.getHistory();
+  if (stream) {
+    const aiResponse = await chat.sendMessageStream({ message });
+    res.writeHead(200, {
+      Connection: 'keep-alive',
+      'Cache-Control': 'no-cache',
+      'Content-Type': 'text/event-stream'
+    });
 
-  await currentChat.save();
+    currentChat.history.push({
+      role: 'user',
+      parts: [{ text: message }]
+    });
 
-  res.json({ aiResponse: aiResponse.text, chatId: currentChat._id });
+    let fullResponse = '';
+    for await (const chunk of aiResponse) {
+      console.log(chunk.text);
+      res.write(`data: ${chunk.text}\n\n`);
+      fullResponse += chunk.text;
+    }
+
+    currentChat.history.push({
+      role: 'model',
+      parts: [{ text: fullResponse }]
+    });
+
+    const jsonData = { chatId: currentChat._id };
+    res.write(`data: json: ${JSON.stringify(jsonData)}\n\n`);
+    res.end();
+    res.on('close', async () => {
+      await currentChat.save();
+      res.end();
+    });
+  } else {
+    const aiResponse = await chat.sendMessage({ message });
+
+    currentChat.history = chat.getHistory();
+
+    await currentChat.save();
+
+    res.json({ aiResponse: aiResponse.text, chatId: currentChat._id });
+  }
 };
 
 const getChatHistory = async (req, res) => {
