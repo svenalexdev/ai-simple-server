@@ -28,10 +28,12 @@ Currently, this API supports
   - A basic implementation, holds the chat history in memory
 - Chat: `POST` `/chat`
   - Chat history is stored in a MongoDB database
+- Get Chat HistoryL `GET` `/chat/:id`
+  - Get full chat history from database
 
 ## Sample request
 
-### Body
+### Simple Chat and Chat Body
 
 ```json
 {
