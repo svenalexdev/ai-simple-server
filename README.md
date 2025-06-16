@@ -4,11 +4,7 @@ This project provides a proxy for OpenAI API requests, allowing you to manage AP
 
 ## Installation
 
-- Clone this project
-
-```bash
-git clone https://github.com/WebDev-WBSCodingSchool/openai-proxy.git
-```
+- Fork and Clone this project
 
 - Install dependencies:
 
@@ -16,68 +12,32 @@ git clone https://github.com/WebDev-WBSCodingSchool/openai-proxy.git
 npm install
 ```
 
-- Create `.env` file at the root of the project with a variable `OPEN_AI_APIKEY` with the value of your Open AI secret key
+- Create `.env` file at the root of the project with a variable `GEMINI_API_KEY` with the value of your Gemini secret key
+- Add a second variable `MONGO_URI` and set it to your MongoDB Connection string
 - Run
 
 ```bash
 npm run dev
 ```
 
-## Supported APIs
+## Endpoints
 
-Currently, thi proxy supports
+Currently, this API supports
 
-- Chat Completions API: `POST` `/api/v1/chat/completions`
+- Simple Chat: `POST` `/chat/simple`
+  - A basic implementation, holds the chat history in memory
+- Chat: `POST` `/chat`
+  - Chat history is stored in a MongoDB database
+- Get Chat HistoryL `GET` `/chat/:id`
+  - Get full chat history from database
 
 ## Sample request
 
-### Headers
+### Simple Chat and Chat Body
 
-- `provider` (required)
-  - `open-ai`
-- `mode` (required)
-  - `development`: Request to Open AI is mocked
-  - `production`: Request to Open AI is proxied
-
-### Body
-
-```javascript
-const myHeaders = new Headers();
-myHeaders.append('provider', 'open-ai');
-myHeaders.append('mode', 'production');
-myHeaders.append('Content-Type', 'application/json');
-
-const raw = JSON.stringify({
-  model: 'gpt-4o',
-  messages: [
-    {
-      role: 'system',
-      content: 'You are a helpful assistant.'
-    },
-    {
-      role: 'user',
-      content: 'Who won the world series in 2020?'
-    },
-    {
-      role: 'assistant',
-      content: 'The Los Angeles Dodgers won the World Series in 2020.'
-    },
-    {
-      role: 'user',
-      content: 'Where was it played?'
-    }
-  ]
-});
-
-const requestOptions = {
-  method: 'POST',
-  headers: myHeaders,
-  body: raw,
-  redirect: 'follow'
-};
-
-fetch('http://localhost:5050/api/v1/chat/completions', requestOptions)
-  .then(response => response.text())
-  .then(result => console.log(result))
-  .catch(error => console.error(error));
+```json
+{
+  "message": "How do I save to local storage?",
+  "chatId": "6849725aa34cc4996b4ea6ee" // not available on simple chat, optional on chat
+}
 ```
