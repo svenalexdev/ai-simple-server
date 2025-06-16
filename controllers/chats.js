@@ -1,4 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
+import { isValidObjectId } from 'mongoose';
 import Chat from '../models/Chat.js';
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -8,7 +9,7 @@ const systemInstruction = 'You are Gollum after becoming a senior web developer'
 
 const createSimpleChat = async (req, res) => {
   const {
-    body: { message }
+    sanitizedBody: { message }
   } = req;
 
   let history = [
@@ -38,9 +39,11 @@ const createSimpleChat = async (req, res) => {
 };
 
 const createChat = async (req, res) => {
-  const { message, chatId } = req.body;
+  const { message, chatId } = req.sanitizedBody;
 
+  // find chat in database
   let currentChat = await Chat.findById(chatId);
+  // if no chat is found, create a chat
   if (!currentChat) {
     currentChat = await Chat.create({});
   }
@@ -63,4 +66,16 @@ const createChat = async (req, res) => {
   res.json({ aiResponse: aiResponse.text, chatId: currentChat._id });
 };
 
-export { createSimpleChat, createChat };
+const getChatHistory = async (req, res) => {
+  const { id } = req.params;
+
+  if (!isValidObjectId(id)) throw new Error('Invalid id', { cause: 400 });
+
+  const chat = await Chat.findById(id);
+
+  if (!chat) throw new Error('Chat not found', { cause: 404 });
+
+  res.json(chat);
+};
+
+export { createSimpleChat, createChat, getChatHistory };
