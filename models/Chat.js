@@ -1,10 +1,17 @@
 import { Schema, model } from 'mongoose';
 
+const messageSchema = new Schema({
+  role: {
+    type: String,
+    enum: ['user', 'model']
+  },
+  parts: [{ text: String }]
+});
+
 const chatSchema = new Schema(
   {
     history: {
-      // sets to an array of mixed objects - Mongoose won't enforce their shape
-      type: [{}],
+      type: [messageSchema],
       default: []
     }
   },
