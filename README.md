@@ -1,6 +1,6 @@
-# OpenAI Proxy API
+# A simple server for working with Gemini API
 
-This project provides a proxy for OpenAI API requests, allowing you to manage API requests and responses in development and production modes.
+This project provides a simple server for Gemini API requests, allowing you to manage API requests and responses, and get the chat history.
 
 ## Installation
 
@@ -11,6 +11,16 @@ This project provides a proxy for OpenAI API requests, allowing you to manage AP
 ```bash
 npm install
 ```
+
+### Get a Gemini API Key
+
+- Follow this link to get your API key: https://aistudio.google.com/app/apikey
+- If a modal pops up, click `Get API key`
+- In the dashboard, click `Create API Key` in the top right corner
+- Click `Create API key in new project` if this is your first time working with Gemini
+  - choose an existing project if re-generating an API key
+
+### Continue project Setup
 
 - Create `.env` file at the root of the project with a variable `GEMINI_API_KEY` with the value of your Gemini secret key
 - Add a second variable `MONGO_URI` and set it to your MongoDB Connection string
@@ -41,3 +51,30 @@ Currently, this API supports
   "chatId": "6849725aa34cc4996b4ea6ee" // not available on simple chat, optional on chat
 }
 ```
+
+## Server setup checklist
+
+### `POST` `/chat/simple`
+
+- Make a request to this endpoint
+- Look at the `createSimpleChat` function in `controllers/chats.js`
+- Update the `systemInstruction` to change the "voice" of the AI assistant
+- Note the structure of the `history` variable
+  - Update the history to see how it influences the AI assistant
+- Note the `getHistory()` method
+
+### `POST` `/chat`
+
+- Make a request to this endpoint
+- Note the shape of the `Chat` model found in `/models/Chat.js`
+- Compare the flow to the `createSimpleChat` controller. What has been added to allow database storage?
+- Create a chat, and include the `chatId` in the body of subsequent requests
+- Open Mongo Compass, and see what gets stored when you save a chat
+- Make note of the additional comments
+
+### `GET` `/chat/:id`
+
+- Make a request to this endpoint, and take note of the structure of the body
+- Look closely at how the objects in the `history` are structured. How are the messages stored? How does Gemini keep track of who wrote the message?
+
+#### Use any extra time to play around with the API, and to read through the [Gemini Documentation](https://ai.google.dev/gemini-api/docs/text-generation)

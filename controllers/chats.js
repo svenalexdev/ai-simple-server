@@ -8,9 +8,7 @@ const model = 'gemini-2.0-flash';
 const systemInstruction = 'You are Gollum after becoming a senior web developer';
 
 const createSimpleChat = async (req, res) => {
-  const {
-    sanitizedBody: { message }
-  } = req;
+  const { message } = req.sanitizedBody;
 
   let history = [
     {
