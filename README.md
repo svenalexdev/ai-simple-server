@@ -67,7 +67,7 @@ Currently, this API supports
 
 - Make a request to this endpoint
 - Note the shape of the `Chat` model found in `/models/Chat.js`
-- Compare the flow to the `createSimpleChat` controller. What has been added to allow database storage?
+- Compare the flow to the `createSimpleChat` controller. What has been added/changed to allow database storage?
 - Create a chat, and include the `chatId` in the body of subsequent requests
 - Open Mongo Compass, and see what gets stored when you save a chat
 - Make note of the additional comments
@@ -75,6 +75,6 @@ Currently, this API supports
 ### `GET` `/chat/:id`
 
 - Make a request to this endpoint, and take note of the structure of the body
-- Look closely at how the objects in the `history` are structured. How are the messages stored? How does Gemini keep track of who wrote the message?
+- Look closely at how the objects in the `history` are structured.
 
 #### Use any extra time to play around with the API, and to read through the [Gemini Documentation](https://ai.google.dev/gemini-api/docs/text-generation)
