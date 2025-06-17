@@ -61,6 +61,11 @@ const createChat = async (req, res) => {
   if (!currentChat) {
     currentChat = await Chat.create({});
   }
+  // add user message to database history
+  currentChat.history.push({
+    role: 'user',
+    parts: [{ text: message }]
+  });
 
   const chat = ai.chats.create({
     model,
@@ -80,10 +85,10 @@ const createChat = async (req, res) => {
       'Content-Type': 'text/event-stream'
     });
 
-    currentChat.history.push({
-      role: 'user',
-      parts: [{ text: message }]
-    });
+    // currentChat.history.push({
+    //   role: 'user',
+    //   parts: [{ text: message }]
+    // });
 
     let fullResponse = '';
     for await (const chunk of aiResponse) {
@@ -107,7 +112,11 @@ const createChat = async (req, res) => {
   } else {
     const aiResponse = await chat.sendMessage({ message });
 
-    currentChat.history = chat.getHistory();
+    // add AI message to database history
+    currentChat.history.push({
+      role: 'model',
+      parts: [{ text: aiResponse.text }]
+    });
 
     await currentChat.save();
 
