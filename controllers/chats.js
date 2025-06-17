@@ -85,15 +85,10 @@ const createChat = async (req, res) => {
       'Content-Type': 'text/event-stream'
     });
 
-    // currentChat.history.push({
-    //   role: 'user',
-    //   parts: [{ text: message }]
-    // });
-
     let fullResponse = '';
     for await (const chunk of aiResponse) {
-      console.log(chunk.text);
-      res.write(`data: ${chunk.text}\n\n`);
+      // console.log(chunk.text);
+      res.write(`data: ${JSON.stringify({ text: chunk.text })}\n\n`);
       fullResponse += chunk.text;
     }
 
@@ -102,8 +97,7 @@ const createChat = async (req, res) => {
       parts: [{ text: fullResponse }]
     });
 
-    const jsonData = { chatId: currentChat._id };
-    res.write(`data: json: ${JSON.stringify(jsonData)}\n\n`);
+    res.write(`data: ${JSON.stringify({ chatId: currentChat._id })}\n\n`);
     res.end();
     res.on('close', async () => {
       await currentChat.save();
