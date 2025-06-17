@@ -2,6 +2,6 @@ import { z } from 'zod/v4';
 
 export const userMessageSchema = z.object({
   message: z.string().min(1, 'Must have a message'),
-  stream: z.boolean(),
+  stream: z.boolean().default(false),
   chatId: z.string().length(24).nullish()
 });
